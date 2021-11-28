@@ -1,0 +1,11 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "CloudFormation Template for Folklens",
+
+  "Resources": {
+    "photosBucket": {
+      "Type": "AWS::S3::Bucket"
+    }
+  }
+}
