@@ -1,0 +1,23 @@
+{
+  "name": "folklens-aws",
+  "version": "1.0.0",
+  "description": "Run Folklens on AWS",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/michrome/folklens-aws.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/michrome/folklens-aws/issues"
+  },
+  "homepage": "https://github.com/michrome/folklens-aws#readme",
+  "devDependencies": {
+    "prettier": "^2.5.0"
+  }
+}
