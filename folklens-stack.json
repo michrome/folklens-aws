@@ -4,8 +4,61 @@
   "Description": "CloudFormation Template for Folklens",
 
   "Resources": {
-    "originals": {
+    "MyBucket": {
       "Type": "AWS::S3::Bucket"
+    },
+    "MyLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "ZipFile": "\"use strict\";\r\n\r\nexports.handler = async (event) => {\r\n  const responseCode = 200;\r\n  const now = Date.now();\r\n  const responseBody = {\r\n    message: now,\r\n  };\r\n\r\n  const response = {\r\n    statusCode: responseCode,\r\n    headers: {\r\n      \"x-custom-header\": \"my custom header value\",\r\n    },\r\n    body: JSON.stringify(responseBody),\r\n  };\r\n  console.log(\"response: \" + JSON.stringify(response));\r\n  return response;\r\n};"
+        },
+        "Description": "Lambda function that returns the time in ms",
+        "Handler": "index.handler",
+        "Role": { "Fn::GetAtt": ["MyLambdaRole", "Arn"] },
+        "Runtime": "nodejs14.x"
+      }
+    },
+    "MyLambdaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": ["lambda.amazonaws.com"]
+              },
+              "Action": ["sts:AssumeRole"]
+            }
+          ]
+        }
+      }
+    },
+    "MyLambdaLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": { "Fn::Sub": "/aws/lambda/${MyLambdaFunction}" },
+        "RetentionInDays": 1
+      }
+    },
+    "MyLambdaLogPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": ["logs:CreateLogStream", "logs:PutLogEvents"],
+              "Resource": [{ "Fn::GetAtt": ["MyLambdaLogGroup", "Arn"] }]
+            }
+          ]
+        },
+        "PolicyName": "MyLambdaLogPolicy",
+        "Roles": [{ "Ref": "MyLambdaRole" }]
+      }
     }
   }
 }

@@ -5,4 +5,4 @@ Run Folklens on AWS
 
 ### Create stack
 
-```$ aws cloudformation create-stack --stack-name folklens --template-body file://folklens-stack.json```
+```$ aws cloudformation create-stack --stack-name folklens --template-body file://folklens-stack.json --capabilities CAPABILITY_IAM``
