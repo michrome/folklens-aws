@@ -1,24 +1,24 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-
   "Description": "CloudFormation Template for Folklens",
-
   "Resources": {
     "MyBucket": {
       "Type": "AWS::S3::Bucket"
     },
-    "MyLambdaFunction": {
+
+    "EchoPayloadFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
-          "ZipFile": "\"use strict\";\r\n\r\nexports.handler = async (event) => {\r\n  const responseCode = 200;\r\n  const now = Date.now();\r\n  const responseBody = {\r\n    message: now,\r\n  };\r\n\r\n  const response = {\r\n    statusCode: responseCode,\r\n    headers: {\r\n      \"x-custom-header\": \"my custom header value\",\r\n    },\r\n    body: JSON.stringify(responseBody),\r\n  };\r\n  console.log(\"response: \" + JSON.stringify(response));\r\n  return response;\r\n};"
+          "ZipFile": "exports.handler = async (event) => {return event};"
         },
-        "Description": "Lambda function that returns the time in ms",
+        "Description": "Returns the payload sent to this return",
         "Handler": "index.handler",
         "Role": { "Fn::GetAtt": ["MyLambdaRole", "Arn"] },
         "Runtime": "nodejs14.x"
       }
     },
+
     "MyLambdaRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
@@ -36,13 +36,15 @@
         }
       }
     },
+
     "MyLambdaLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": { "Fn::Sub": "/aws/lambda/${MyLambdaFunction}" },
+        "LogGroupName": { "Fn::Sub": "/aws/lambda/${EchoPayloadFunction}" },
         "RetentionInDays": 1
       }
     },
+
     "MyLambdaLogPolicy": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
@@ -58,6 +60,102 @@
         },
         "PolicyName": "MyLambdaLogPolicy",
         "Roles": [{ "Ref": "MyLambdaRole" }]
+      }
+    },
+
+    "MyApiGateway": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "Properties": {
+        "Name": "My API Gateway",
+        "ProtocolType": "HTTP"
+      }
+    },
+
+    "EchoPayloadRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": { "Ref": "MyApiGateway" },
+        "RouteKey": "GET /echo",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "EchoPayloadIntegration"
+              }
+            ]
+          ]
+        }
+      }
+    },
+
+    "EchoPayloadIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": { "Ref": "MyApiGateway" },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":apigateway:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":lambda:path/2015-03-31/functions/",
+              {
+                "Fn::GetAtt": ["EchoPayloadFunction", "Arn"]
+              },
+              "/invocations"
+            ]
+          ]
+        },
+        "PayloadFormatVersion": "2.0"
+      }
+    },
+
+    "MyStage": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "Properties": {
+        "ApiId": { "Ref": "MyApiGateway" },
+        "StageName": "default"
+      }
+    },
+
+    "MyDeployment": {
+      "Type": "AWS::ApiGatewayV2::Deployment",
+      "Properties": {
+        "ApiId": { "Ref": "MyApiGateway" },
+        "StageName": { "Ref": "MyStage" }
+      },
+      "DependsOn": "EchoPayloadRoute"
+    },
+
+    "EchoPayloadPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Ref": "EchoPayloadFunction" },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:aws:execute-api:",
+              { "Ref": "AWS::Region" },
+              ":",
+              { "Ref": "AWS::AccountId" },
+              ":",
+              { "Ref": "MyApiGateway" },
+              "/*"
+            ]
+          ]
+        }
       }
     }
   }
