@@ -136,7 +136,7 @@
       "Type": "AWS::ApiGatewayV2::Route",
       "Properties": {
         "ApiId": { "Ref": "FolklensApiGateway" },
-        "RouteKey": "GET /echo",
+        "RouteKey": "GET /echo-payload",
         "Target": {
           "Fn::Join": [
             "/",
