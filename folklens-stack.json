@@ -60,7 +60,7 @@
       "Type": "AWS::ApiGatewayV2::Stage",
       "Properties": {
         "ApiId": { "Ref": "FolklensApiGateway" },
-        "DeploymentId": { "Ref": "MyDeployment" },
+        "AutoDeploy": true,
         "Description": "The stage references the deployment (not the other way around) to ensure the stack can be cleanly deleted by CloudFormation. Note if we use the Quick create HTTP API syntax this is no longer needed.",
         "StageName": "$default"
       }
@@ -148,15 +148,6 @@
             ]
           ]
         }
-      }
-    },
-
-    "MyDeployment": {
-      "Type": "AWS::ApiGatewayV2::Deployment",
-      "DependsOn": ["EchoPayloadRoute"],
-      "Properties": {
-        "ApiId": { "Ref": "FolklensApiGateway" },
-        "Description": "An atomic deployment of this API, stage and its routes. Note the stage should reference the deployment to ensure Cloudformation can cleanly delete the stack. Note if we use the Quick create HTTP API syntax this is no longer needed."
       }
     }
   }
