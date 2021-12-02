@@ -11,7 +11,7 @@ $ aws cloudformation create-stack --stack-name folklens --template-body file://f
 
 ### View the result
 
-View https://{API ID}.execute-api.{REGION}.amazonaws.com/echo-payload in a browser to see output like:
+View `https://{API ID}.execute-api.{REGION}.amazonaws.com/echo-payload` in a browser to see output like:
 
 ```json
 {
