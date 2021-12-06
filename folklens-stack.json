@@ -176,23 +176,19 @@
     }
   },
 
-  "HelloPermission": {
-    "Type": "AWS::Lambda::Permission",
+  "HelloRoute": {
+    "Type": "AWS::ApiGatewayV2::Route",
     "Properties": {
-      "Action": "lambda:InvokeFunction",
-      "FunctionName": { "Ref": "HelloFunction" },
-      "Principal": "apigateway.amazonaws.com",
-      "SourceArn": {
+      "ApiId": { "Ref": "FolklensApiGateway" },
+      "RouteKey": "GET /hello",
+      "Target": {
         "Fn::Join": [
-          "",
+          "/",
           [
-            "arn:aws:execute-api:",
-            { "Ref": "AWS::Region" },
-            ":",
-            { "Ref": "AWS::AccountId" },
-            ":",
-            { "Ref": "FolklensApiGateway" },
-            "/*"
+            "integrations",
+            {
+              "Ref": "HelloIntegration"
+            }
           ]
         ]
       }
@@ -229,30 +225,34 @@
     }
   },
 
-  "HelloRoute": {
-    "Type": "AWS::ApiGatewayV2::Route",
-    "Properties": {
-      "ApiId": { "Ref": "FolklensApiGateway" },
-      "RouteKey": "GET /hello",
-      "Target": {
-        "Fn::Join": [
-          "/",
-          [
-            "integrations",
-            {
-              "Ref": "HelloIntegration"
-            }
-          ]
-        ]
-      }
-    }
-  },
-
   "HelloLogGroup": {
     "Type": "AWS::Logs::LogGroup",
     "Properties": {
       "LogGroupName": { "Fn::Sub": "/aws/lambda/${HelloFunction}" },
       "RetentionInDays": 1
+    }
+  },
+
+  "HelloPermission": {
+    "Type": "AWS::Lambda::Permission",
+    "Properties": {
+      "Action": "lambda:InvokeFunction",
+      "FunctionName": { "Ref": "HelloFunction" },
+      "Principal": "apigateway.amazonaws.com",
+      "SourceArn": {
+        "Fn::Join": [
+          "",
+          [
+            "arn:aws:execute-api:",
+            { "Ref": "AWS::Region" },
+            ":",
+            { "Ref": "AWS::AccountId" },
+            ":",
+            { "Ref": "FolklensApiGateway" },
+            "/*"
+          ]
+        ]
+      }
     }
   }
 }
