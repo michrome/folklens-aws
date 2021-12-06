@@ -21,7 +21,7 @@
       }
     },
 
-    "FolklensLogGroup": {
+    "EchoPayloadLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
         "LogGroupName": { "Fn::Sub": "/aws/lambda/${EchoPayloadFunction}" },
@@ -38,7 +38,18 @@
             {
               "Effect": "Allow",
               "Action": ["logs:CreateLogStream", "logs:PutLogEvents"],
-              "Resource": [{ "Fn::GetAtt": ["FolklensLogGroup", "Arn"] }]
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:aws:logs:",
+                    { "Ref": "AWS::Region" },
+                    ":",
+                    { "Ref": "AWS::AccountId" },
+                    ":log-group:/aws/lambda/*"
+                  ]
+                ]
+              }
             }
           ]
         },
