@@ -71,6 +71,7 @@
     "EchoPayloadFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
+        "Architectures": "arm64",
         "Code": {
           "ZipFile": "exports.handler = async (event) => {return event};"
         },
@@ -164,6 +165,7 @@
     "HelloFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
+        "Architectures": "arm64",
         "Code": {
           "ZipFile": "exports.handler = async (event) => {return { message: \"Hello\"}};"
         },
