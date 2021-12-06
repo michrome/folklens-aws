@@ -1,12 +1,18 @@
 # folklens-aws
 Use CloudFormation to create the AWS resources needed to call a Lambda function via HTTP.
 
-## Commands
+## Getting Started
+
+You will need an S3 bucket for your artifacts. The bucket name we are using in these docs is `folklens-cloudformation-artifacts`.
 
 ### Create stack
 
 ```bash
-$ aws cloudformation create-stack --stack-name folklens --template-body file://folklens-stack.json --capabilities CAPABILITY_IAM
+$ aws cloudformation package --template-file folklens-stack.json --output-template folklens-stack-packaged.json --s3-bucket folklens-cloudformation-artifacts
+```
+
+```bash
+$ aws cloudformation deploy --template-file folklens-stack-packaged.json --stack-name folklens --capabilities CAPABILITY_IAM
 ```
 
 ### View the result
@@ -67,4 +73,10 @@ $ aws cloudformation delete-stack --stack-name folklens
 
 ## Stack Visualisation 
 
+The `folklens-stack` now references a stack for each function.
+
 ![Stack Visualisation](stack-visualisation.png "Stack Visualisation")
+
+Each function stack defines a Lambda function, a route, an integration, a log group and permission to be invoked.
+
+![Function stack](function-stack-visualisation.png "Function stack")
