@@ -12,7 +12,7 @@ $ aws cloudformation package --template-file folklens-stack.json --output-templa
 ```
 
 ```bash
-$ aws cloudformation deploy --template-file folklens-stack-packaged.json --stack-name folklens --capabilities CAPABILITY_IAM
+$ aws cloudformation deploy --template-file folklens-stack-packaged.json --stack-name folklens --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND
 ```
 
 ### View the result

@@ -11,16 +11,15 @@
       "Description": "The ARN of the role assumed by this function"
     }
   },
+  "Transform": "AWS::Serverless-2016-10-31",
   "Resources": {
     "HelloFunction": {
-      "Type": "AWS::Lambda::Function",
+      "Type": "AWS::Serverless::Function",
       "Properties": {
         "Architectures": ["arm64"],
-        "Code": {
-          "ZipFile": "exports.handler = async (event) => {return { message: \"Hello\"}};"
-        },
         "Description": "Returns Hello",
         "Handler": "index.handler",
+        "InlineCode": "exports.handler = async (event) => {return { message: \"Hello\"}};",
         "Role": { "Ref": "FolklensLambdaRole" },
         "Runtime": "nodejs14.x"
       }
