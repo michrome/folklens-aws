@@ -1,0 +1,141 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation Template to get an upload Url to a bucket",
+  "Parameters": {
+    "ApiGateway": {
+      "Type": "String",
+      "Description": "The API Gatway calling this function"
+    },
+    "FolklensLambdaRole": {
+      "Type": "String",
+      "Description": "The ARN of the role assumed by this function"
+    },
+    "FolklensLambdaRoleName": {
+        "Type": "String",
+        "Description": "The NAME of the role assumed by this function"
+      }
+  },
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Resources": {
+    "UploadBucket": {
+      "Type": "AWS::S3::Bucket"
+    },
+
+    "MyUploadPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": ["s3:PutObject"],
+              "Resource": {
+                "Fn::Sub": [
+                  "arn:aws:s3:::${BucketName}/*",
+                  { "BucketName": { "Ref": "UploadBucket" } }
+                ]
+              }
+            }
+          ]
+        },
+        "PolicyName": "MyUploadPolicy",
+        "Roles": [{ "Ref": "FolklensLambdaRoleName" }]
+      }
+    },
+
+    "GetUploadUrlFunction": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Architectures": ["arm64"],
+        "Description": "Returns a presigned URL for upload",
+        "Environment": {
+          "Variables": { "BUCKET": { "Ref": "UploadBucket" } }
+        },
+        "Handler": "index.handler",
+        "Role": { "Ref": "FolklensLambdaRole" },
+        "Runtime": "nodejs14.x"
+      }
+    },
+
+    "GetUploadUrlRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": { "Ref": "ApiGateway" },
+        "RouteKey": "GET /get-upload-url",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "GetUploadUrlIntegration"
+              }
+            ]
+          ]
+        }
+      }
+    },
+
+    "GetUploadUrlIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": { "Ref": "ApiGateway" },
+        "Description": "The integration that connects our HTTP API to our Lambda function. Note if we use the Quick create HTTP API syntax this is no longer needed.",
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationUri": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":apigateway:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":lambda:path/2015-03-31/functions/",
+              {
+                "Fn::GetAtt": ["GetUploadUrlFunction", "Arn"]
+              },
+              "/invocations"
+            ]
+          ]
+        },
+        "PayloadFormatVersion": "2.0"
+      }
+    },
+
+    "GetUploadUrlLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": { "Fn::Sub": "/aws/lambda/${GetUploadUrlFunction}" },
+        "RetentionInDays": 1
+      }
+    },
+
+    "GetUploadUrlPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": { "Ref": "GetUploadUrlFunction" },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:aws:execute-api:",
+              { "Ref": "AWS::Region" },
+              ":",
+              { "Ref": "AWS::AccountId" },
+              ":",
+              { "Ref": "ApiGateway" },
+              "/*"
+            ]
+          ]
+        }
+      }
+    }
+  }
+}
