@@ -100,18 +100,6 @@
         },
         "TemplateURL": "functions/get-upload-url/stack.json"
       }
-    },
-
-    "NetworkQualityStack": {
-      "Type": "AWS::CloudFormation::Stack",
-      "Properties": {
-        "Parameters": {
-          "ApiGateway": { "Ref": "FolklensApiGateway" },
-          "FolklensLambdaRole": { "Fn::GetAtt": ["FolklensLambdaRole", "Arn"] },
-          "FolklensLambdaRoleName": { "Ref": "FolklensLambdaRole" }
-        },
-        "TemplateURL": "functions/network-quality/stack.json"
-      }
     }
   }
 }
